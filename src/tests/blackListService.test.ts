@@ -1,41 +1,59 @@
+import { redisClient } from "../config/redis";
+import "jest";
 import {
   addToBlacklist,
   removeFromBlacklist,
   isBlacklisted,
 } from "../services/blackListService";
-import { redisClient } from "../config/redis";
 
-jest.mock("../config/redis");
+jest.mock("../config/redis", () => ({
+  redisClient: {
+    set: jest.fn(),
+    del: jest.fn(),
+    get: jest.fn(),
+  },
+}));
 
-describe("blacklistService", () => {
+describe("Blacklist Service", () => {
   afterEach(() => {
     jest.clearAllMocks();
   });
 
-  it("should add an email to the blacklist", async () => {
-    await addToBlacklist("test@example.com");
-    expect(redisClient.set).toHaveBeenCalledWith(
-      "blacklist:test@example.com",
-      "true"
-    );
+  test("should add email to blacklist", async () => {
+    const email = "test@example.com";
+    (redisClient.set as jest.Mock).mockResolvedValue("OK");
+
+    await addToBlacklist(email);
+
+    expect(redisClient.set).toHaveBeenCalledWith(`blacklist:${email}`, "true");
   });
 
-  it("should remove an email from the blacklist", async () => {
-    await removeFromBlacklist("test@example.com");
-    expect(redisClient.del).toHaveBeenCalledWith("blacklist:test@example.com");
+  test("should remove email from blacklist", async () => {
+    const email = "test@example.com";
+    (redisClient.del as jest.Mock).mockResolvedValue(1);
+
+    await removeFromBlacklist(email);
+
+    expect(redisClient.del).toHaveBeenCalledWith(`blacklist:${email}`);
   });
 
-  it("should return true if an email is blacklisted", async () => {
-    (redisClient.get as jest.Mock).mockResolvedValueOnce("true");
+  test("should check if email is blacklisted", async () => {
+    const email = "test@example.com";
+    (redisClient.get as jest.Mock).mockResolvedValue("true");
 
-    const result = await isBlacklisted("test@example.com");
+    const result = await isBlacklisted(email);
+
+    expect(redisClient.get).toHaveBeenCalledWith(`blacklist:${email}`);
     expect(result).toBe(true);
   });
 
-  it("should return false if an email is not blacklisted", async () => {
-    (redisClient.get as jest.Mock).mockResolvedValueOnce(null);
+  test("should return false if email is not blacklisted", async () => {
+    const email = "test@example.com";
+    (redisClient.get as jest.Mock).mockResolvedValue(null);
 
-    const result = await isBlacklisted("test@example.com");
+    const result = await isBlacklisted(email);
+
+    expect(redisClient.get).toHaveBeenCalledWith(`blacklist:${email}`);
     expect(result).toBe(false);
   });
 });

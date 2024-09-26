@@ -19,3 +19,6 @@ coverage/
 
 # MacOS özel dosyaları
 .DS_Store
+
+/logs
+/images
