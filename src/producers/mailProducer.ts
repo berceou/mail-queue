@@ -2,7 +2,7 @@ import { sendMailToQueue } from "../services/queueService";
 import logger from "../utils/logger";
 
 const mail = {
-  to: "recipient@example.com",
+  to: "berceozumtest@example.com",
   subject: "Test Email",
   body: "This is a test email sent via RabbitMQ",
 };

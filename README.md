@@ -1,6 +1,16 @@
 # Mail Queue Project
 
-Bu proje, RabbitMQ ve Redis kullanarak bir mail kuyruğu uygulaması oluşturmayı amaçlamaktadır. Proje, e-posta gönderimlerini asenkron hale getirerek daha verimli bir sistem sağlanmasına bir örnek göstermeyi hedeflemektedir.
+Bu proje, RabbitMQ ve Redis kullanarak bir mail kuyruğu uygulaması oluşturmayı amaçlamaktadır.
+RabbitMQ ve Redisin aynı anda kullanılma amacı ikisini de kullanım durumunlarını proje yaparak kavramak ve karşılaştırabilmektir.
+
+## Kullanılan Teknolojiler
+
+- **TypeScript**: Projenin ana dili olarak kullanılır.
+- **RabbitMQ**: Mesajlaşma kuyruğu için kullanılır, asenkron iletişim sağlar.
+- **Redis**: Verilerin hızlı bir şekilde saklanması ve erişimi için kullanılır. Örnek olarak blacklist mailler
+- **Winston**: Loglama işlemleri için kullanılır. Proje çalıştığı andan itibaren log dosyası oluşur ve takibi kolaylaştırır.
+- **Jest**: Test yazmak ve çalıştırmak için kullanılır. test-coverage %80 olarak ayarlanmıştır.
+- **Nodemailer**: Email göndermek için kullanılan kütüphane. SMTP üzerinden emailleri yönetmek için kullanıldı.
 
 ## Proje Yapısı
 
@@ -14,22 +24,32 @@ MailQueue/
 │   │
 │   ├── controllers/
 │   │   └── mailController.ts # Mail gönderim kontrolörü
+│   │   └── blackListController.ts # Blacklist kontrolörü
 │   │
 │   ├── services/
 │   │   ├── mailService.ts    # Mail gönderim işlemleri
 │   │   └── queueService.ts    # Queue ile ilgili işlemler
+│   │   └── blackListervice.ts    # Blacklist ile ilgili işlemler
 │   │
 │   ├── types/
 │   │   └── mailType.ts       # Mail ile ilgili tip tanımlamaları
 │   │
 │   ├── utils/
-│   │   └── logger.ts         # Logger yapılandırması
+│   │   └── logger.ts         # Logger yapılandırması (winston)
 │   │
 │   ├── consumers/
 │   │   └── mailConsumer.ts    # Mail kuyruk tüketici
 │   │
 │   ├── producers/
 │   │   └── mailProducer.ts    # Mail kuyruk üretici
+│   │
+│   ├── tests/ (jest)
+│   │   └── app.test.ts
+│   │   └── blackListService.test.ts
+│   │   └── mailService.test.ts
+│   │   └── queueService.test.ts
+│   │   └── redis.test.ts
+│   │   └── rabbitmq.test.ts
 │   │
 │   └── app.ts                # Express uygulaması başlatma dosyası
 │
@@ -38,14 +58,6 @@ MailQueue/
 └── README.md                  # Proje hakkında bilgiler
 
 ```
-
-## Kullanılan Teknolojiler
-
-- **TypeScript**: Projenin ana dili olarak kullanılır.
-- **RabbitMQ**: Mesajlaşma kuyruğu için kullanılır, asenkron iletişim sağlar.
-- **Redis**: Verilerin hızlı bir şekilde saklanması ve erişimi için kullanılır.
-- **Winston**: Loglama işlemleri için kullanılır.
-- **Jest**: Test yazmak ve çalıştırmak için kullanılır.
 
 ## Projenin Çalışma Mantığı
 
@@ -81,7 +93,107 @@ npm test
 
 Uygulamanın doğru çalışabilmesi için `.env` dosyasını oluşturmalı ve aşağıdaki değerleri eklemelisiniz:
 
-**TODO:::değerleri gir**
+```
+PORT=3000
+RABBITMQ_URL=amqp://localhost
+RABBITMQ_QUEUE_NAME=mail_queue
+REDIS_HOST=127.0.0.1
+REDIS_PORT=6379
+MAIL_USER=your-email@gmail.com
+MAIL_PASS=your-email-password
+```
+
+## Redis ile Kayıtlı Verileri Görüntüleme
+
+Redisi başlat:
+
+```bash
+redis-server
+```
+
+Redis CLI'yi aç:
+
+```bash
+redis-cli
+```
+
+Kayıtlı verileri görmek için aşağıdaki komutu kullanın. Örneğin, "blacklist" anahtarındaki verileri görüntülemek için:
+
+```bash
+keys blacklist:*
+```
+
+Belirli bir anahtarın değerini görmek için:
+
+```bash
+get blacklist:test@example.com
+```
+
+Tüm değerleri görmek için:
+
+```bash
+KEYS*
+```
+
+## RabbitMQ Yönetim Arayüzü
+
+RabbitMQ, queue ve mesajlar üzerinde kontrol sağlamak için bir yönetim arayüzü.
+
+RabbitMQ başlat:
+
+```bash
+rabbitmq-server
+```
+
+`http://localhost:15672/` adresine git. Varsayılan kullanıcı adı ve şifre olarak `guest`/`guest` kullanabilirsin. Panele ulaşmış olacaksın.
+
+# API Kullanımı
+
+Postman
+
+email gönderme:
+
+- **endpoint** `/send-mail`
+- **method:** `POST`
+- **body:**
+
+```json
+{
+  "to": "recipient@example.com",
+  "subject": "Test Email",
+  "text": "This is a test email."
+}
+```
+
+emaili blackliste ekleme:
+
+- **endpoint** `/blacklist/add`
+- **method:** `POST`
+- **body:**
+
+```json
+{
+  "email": "test@example.com"
+}
+```
+
+emaili blacklistten çıkarma:
+
+- **endpoint** `/blacklist/remove`
+- **method:** `POST`
+- **body:**
+
+```json
+{
+  "email": "test@example.com"
+}
+```
+
+**NOT:** blacklist ekleme çıkarma kontrollerini redis-cli aracılığıyla kontrol edebilirsin. queue alınan mail sayısını ve kontrolleri de rabbitMQ yönetim panelinden görüntüleyebilirsin
+
+![exp-redis-cli](/images/rediscli.jpeg)
+
+![exp-rabbitmq](/images/rabbitmqexp.jpeg)
 
 # Redis, RabbitMQ, Kafka ve SNS Kıyaslaması
 

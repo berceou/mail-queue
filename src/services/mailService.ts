@@ -26,7 +26,7 @@ export const sendMail = async (
     await transporter.sendMail(mailOptions);
     logger.info(`Mail sent to ${to}`);
 
-    // Redis'e mail bilgisini kaydet
+    // save the msg to redis
     await redisClient.set(`mail:${to}`, JSON.stringify({ to, subject, body }));
     logger.info(`Mail data saved to Redis for ${to}`);
   } catch (error) {
