@@ -7,27 +7,36 @@ Bu proje, RabbitMQ ve Redis kullanarak bir mail kuyruğu uygulaması oluşturmay
 ```
 MailQueue/
 ├── src/
-│ ├── config/
-│ │ └── rabbitmq.ts # RabbitMQ ve Redis bağlantı ayarları
-│ └── controllers/
-│ │ └── mailController.ts # Mail kuyruğa gönderme işlevini yöneten controller
-│ ├── services/
-│ │ ├── mailService.ts # Mail gönderme ve Redis işlemleri
-│ │ └── queueService.ts # RabbitMQ kuyruğa ekleme ve tüketme işlemleri
-│ ├── tests/
-│ │ └── mailService.test.ts # Unit testler (Jest ile)
-│ ├── types/
-│ │ └── mailTypes.ts # Mail veri tipleri (TypeScript arayüzleri)
-│ ├── utils/
-│ │ └── logger.ts # Logger fonksiyonları (loglama işlemleri)
-│ ├── producer.ts # Kuyruğa mail ekleyen başlatıcı dosya
-│ ├── consumer.ts # Kuyruktan mail işleyen başlatıcı dosya
-│ └── app.ts # Uygulama girişi, sunucu başlatma
-├── .env # Ortam değişkenleri (Redis, RabbitMQ ayarları)
-├── .gitignore # Git ignore dosyası
-├── package.json # Proje bağımlılıkları ve scriptler
-├── tsconfig.json # TypeScript yapılandırma dosyası
-└── jest.config.js # Jest yapılandırma dosyası
+│   ├── config/
+│   │   ├── config.ts        # Genel yapılandırma dosyası
+│   │   ├── rabbitmq.ts      # RabbitMQ ile ilgili yapılandırmalar
+│   │   └── redis.ts         # Redis ile ilgili yapılandırmalar
+│   │
+│   ├── controllers/
+│   │   └── mailController.ts # Mail gönderim kontrolörü
+│   │
+│   ├── services/
+│   │   ├── mailService.ts    # Mail gönderim işlemleri
+│   │   └── queueService.ts    # Queue ile ilgili işlemler
+│   │
+│   ├── types/
+│   │   └── mailType.ts       # Mail ile ilgili tip tanımlamaları
+│   │
+│   ├── utils/
+│   │   └── logger.ts         # Logger yapılandırması
+│   │
+│   ├── consumers/
+│   │   └── mailConsumer.ts    # Mail kuyruk tüketici
+│   │
+│   ├── producers/
+│   │   └── mailProducer.ts    # Mail kuyruk üretici
+│   │
+│   └── app.ts                # Express uygulaması başlatma dosyası
+│
+├── .env                       # Ortam değişkenleri
+├── package.json               # Proje bağımlılıkları ve komutları
+└── README.md                  # Proje hakkında bilgiler
+
 ```
 
 ## Kullanılan Teknolojiler
