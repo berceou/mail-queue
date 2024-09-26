@@ -1,24 +1,15 @@
 import amqp from "amqplib";
-import Redis from "ioredis";
+import { config } from "./config"; // Genel yapılandırma dosyası
 
-// RabbitMQ bağlantısı
+// RabbitMQ bağlantısını oluşturma
 export const connectRabbitMQ = async () => {
-  const connection = await amqp.connect(
-    process.env.RABBITMQ_URL || "amqp://localhost"
-  );
-  return connection.createChannel();
+  try {
+    const connection = await amqp.connect(config.rabbitMQ.url);
+    return connection.createChannel();
+  } catch (error) {
+    console.error("RabbitMQ bağlantı hatası:", error);
+    throw error; // Hata fırlatılarak üst katmanlarda yönetilebilir
+  }
 };
 
-// Redis bağlantısı
-export const redisClient = new Redis({
-  host: process.env.REDIS_HOST || "127.0.0.1",
-  port: parseInt(process.env.REDIS_PORT || "6379", 10),
-});
-
-redisClient.on("connect", () => {
-  console.log("Redis connected!");
-});
-
-redisClient.on("error", (err) => {
-  console.error("Redis error:", err);
-});
+// Diğer RabbitMQ ile ilgili işlemler burada yer alabilir

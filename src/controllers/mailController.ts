@@ -1,10 +1,19 @@
 import { Request, Response } from "express";
 import { sendMailToQueue } from "../services/queueService";
+import { isBlacklisted } from "../services/blackListService"; // Blacklist servisini ekle
 
 export const sendMail = async (req: Request, res: Response) => {
   const { to, subject, body } = req.body;
 
   try {
+    // Kara liste kontrolü
+    const blacklisted = await isBlacklisted(to);
+    if (blacklisted) {
+      return res
+        .status(403)
+        .json({ message: "Email is blacklisted and cannot be sent" });
+    }
+
     await sendMailToQueue({ to, subject, body });
     res.status(200).json({ message: "Mail successfully queued" });
   } catch (error) {

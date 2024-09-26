@@ -1,4 +1,5 @@
-import { sendMailToQueue } from "./services/queueService";
+import { sendMailToQueue } from "../services/queueService";
+import logger from "../utils/logger";
 
 const mail = {
   to: "recipient@example.com",
@@ -8,8 +9,8 @@ const mail = {
 
 sendMailToQueue(mail)
   .then(() => {
-    console.log("Mail sent to queue");
+    logger.info("Mail sent to queue");
   })
   .catch((err) => {
-    console.error("Failed to send mail to queue", err);
+    logger.error(`Failed to send mail to queue: ${err}`);
   });
